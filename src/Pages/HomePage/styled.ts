@@ -10,4 +10,8 @@ export const HomeStyled = styled.div`
     margin: 1rem;
     font-weight: bold;
   }
+  .table-header {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
 `;

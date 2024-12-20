@@ -21,15 +21,13 @@ const HomePage = () => {
   const Loading = () => {
     if (isLoading) return <CircularProgress size={100} />;
   };
+  const timeDelay = setTimeout(Loading, 5000);
 
   const Error = () => {
     if (isFetchBaseQueryError(error)) {
       return <ErrorPage />;
-    } else {
-      return;
     }
   };
-  const timeDelay = setTimeout(Loading, 50000);
   useEffect(() => {
     if (data) {
       setListUser(data);
@@ -48,16 +46,16 @@ const HomePage = () => {
               <Table sx={{ minWidth: 650 }} aria-label="simple table">
                 <TableHead>
                   <TableRow>
-                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                    <TableCell align="center" className="table-header">
                       ID
                     </TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                    <TableCell align="center" className="table-header">
                       Type
                     </TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                    <TableCell align="center" className="table-header">
                       Attributes
                     </TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                    <TableCell align="center" className="table-header">
                       Relationships
                     </TableCell>
                     {/* <TableCell></TableCell> */}

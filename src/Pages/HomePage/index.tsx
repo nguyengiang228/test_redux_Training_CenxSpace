@@ -1,6 +1,9 @@
 import { useGetBreedsQuery } from "../../redux/api/api.caller";
 import {
+  Box,
   CircularProgress,
+  Pagination,
+  Paper,
   Table,
   TableBody,
   TableCell,
@@ -16,32 +19,79 @@ import ErrorPage from "../ErrorPage";
 
 const HomePage = () => {
   const { data, isLoading, error } = useGetBreedsQuery();
-  const [listUser, setListUser] = useState<IBreed[]>([]);
+  const [listDogs, setListDogs] = useState<IBreed[]>([]);
+  const [numericStatus, setNumericStatus] = useState<number>(0);
+  const [page, setPage] = useState<number>(1);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const perPage = 3;
+
+  const maxPage = Math.ceil(listDogs.length / perPage);
+
+  const currentData = () => {
+    const begin = (currentPage - 1) * perPage;
+    const end = begin + perPage;
+    return listDogs.slice(begin, end);
+  };
+
+  const jump = (page: number) => {
+    const pageNumber = Math.max(1, page);
+    setCurrentPage(Math.min(pageNumber, maxPage));
+  };
+
+  const handleChange = (_: React.ChangeEvent<unknown>, p: number) => {
+    setPage(p);
+    jump(p);
+  };
 
   const Loading = () => {
     if (isLoading) return <CircularProgress size={100} />;
+    return null;
   };
-  const timeDelay = setTimeout(Loading, 5000);
 
   const Error = () => {
     if (isFetchBaseQueryError(error)) {
-      return <ErrorPage />;
+      const status = error.status;
+      if (typeof status === "number") {
+        setNumericStatus(status);
+      } else {
+        switch (status) {
+          case "FETCH_ERROR":
+            setNumericStatus(500);
+            break;
+          case "PARSING_ERROR":
+            setNumericStatus(404);
+            break;
+          case "TIMEOUT_ERROR":
+            setNumericStatus(408);
+            break;
+          case "CUSTOM_ERROR":
+            setNumericStatus(520);
+            break;
+          default:
+            setNumericStatus(500);
+            break;
+        }
+      }
+
+      // console.log("Error status:", status, typeof status);
+      return <ErrorPage status={numericStatus} />;
     }
+    return null;
   };
   useEffect(() => {
     if (data) {
-      setListUser(data);
+      setListDogs(data);
     }
 
-    console.log({ listUser });
+    console.log({ listDogs });
   }, [data]);
 
   return (
     <HomeStyled>
-      {timeDelay && (
-        <>
-          <Loading />
-          {data && (
+      <>
+        <Loading />
+        {data && (
+          <Paper>
             <TableContainer>
               <Table sx={{ minWidth: 650 }} aria-label="simple table">
                 <TableHead>
@@ -62,7 +112,7 @@ const HomePage = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {listUser.map((item) => (
+                  {currentData().map((item) => (
                     <TableRow key={item.id}>
                       <TableCell component="th" scope="row">
                         {item.id}
@@ -111,10 +161,24 @@ const HomePage = () => {
                 </TableBody>
               </Table>
             </TableContainer>
-          )}
-          <Error />
-        </>
-      )}
+            <Box
+              sx={{
+                display: { xl: "flex", xs: "none" },
+                alignItems: "center",
+                justifyContent: "right",
+              }}
+            >
+              <Pagination
+                count={maxPage}
+                page={page}
+                shape="rounded"
+                onChange={handleChange}
+              />
+            </Box>
+          </Paper>
+        )}
+        <Error />
+      </>
     </HomeStyled>
   );
 };
